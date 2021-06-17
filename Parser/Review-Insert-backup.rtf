@@ -1,0 +1,577 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1671\cocoasubrtf200
+{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red255\green255\blue255;\red89\green138\blue67;
+\red202\green202\blue202;\red70\green137\blue204;\red67\green192\blue160;\red140\green211\blue254;\red167\green197\blue152;
+\red194\green126\blue101;\red212\green214\blue154;\red183\green111\blue179;\red205\green173\blue106;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;\cssrgb\c100000\c100000\c100000;\cssrgb\c41569\c60000\c33333;
+\cssrgb\c83137\c83137\c83137;\cssrgb\c33725\c61176\c83922;\cssrgb\c30588\c78824\c69020;\cssrgb\c61176\c86275\c99608;\cssrgb\c70980\c80784\c65882;
+\cssrgb\c80784\c56863\c47059;\cssrgb\c86275\c86275\c66667;\cssrgb\c77255\c52549\c75294;\cssrgb\c84314\c72941\c49020;}
+\margl1440\margr1440\vieww14800\viewh10280\viewkind0
+\deftab720
+\pard\pardeftab720\sl360\partightenfactor0
+
+\f0\fs24 \cf2 \cb3 \expnd0\expndtw0\kerning0
+/*\
+* Team "Whatever"\
+*\
+* Team Members:\
+*\
+* Marcus Blaisdell\
+* Kimi Phan\
+* Hannah Bogen\
+* Joseph Crissey\
+*\
+* Milestone 1: Parser program \
+*\
+* Code Author: Marcus Blaisdell\
+*\
+* This program was written in C#, using Visual Studio Code on Mac\
+* Modified from previous version written in Visual Studio 2015 on PC\
+* \
+* It makes use of the Newtonsoft library for JSON handling \
+*\
+*/\
+\
+\pard\pardeftab720\sl360\partightenfactor0
+\cf2 using System;\
+using System.Collections;\
+using System.Collections.Generic;\
+using System.Linq;\
+using System.Text;\
+using System.Threading.Tasks;\
+\
+using Newtonsoft.Json;\
+using Newtonsoft.Json.Linq;\
+using System.Text.RegularExpressions;\
+\
+namespace JSONTest\
+\{\
+    class Program\
+    \{\
+            // global variable 'whereTo', \
+            // if 0, write to screen,\
+            // if 1, write to file:\
+\
+        public static int whereTo = 1;\
+        public static string insertStatement = "";\
+        public static string insertValues = "";\
+\
+        static void printLine(string testLine, System.IO.StreamWriter outFile, System.IO.StreamWriter outFileAttributes, System.IO.StreamWriter outFileCategories, System.IO.StreamWriter outFileHours)\
+        \{\
+            var jObj = JObject.Parse(testLine);\
+            string theBusinessId = "";\
+            string theParent = "";\
+\
+                // loop through each key-value-pair:\
+\
+            insertStatement = "INSERT INTO Business (business_id_num, name, neighborhood, street, city, state, postal, latitude, longitude, avg_rating, review_count, is_open) VALUES (  ";\
+            insertValues = "";\
+\
+            foreach (var kvp in jObj.Cast<KeyValuePair<string, JToken>>().ToList())\
+            \{\
+                    // We need the business ID to be part of the primary key for the sub-tables:\
+\
+                if (kvp.Key == "business_id")\
+                \{\
+                    theBusinessId += kvp.Value;\
+                    \
+                \} // end capture business id\
+\
+                if (kvp.Key == "attributes")\
+                \{\
+                    theParent = "attributes";\
+                    printAttributes (theBusinessId, theParent, kvp.Key, kvp.Value, outFileAttributes);\
+                \}\
+\
+                else if (kvp.Key == "categories")\
+                \{\
+                    printCategories (theBusinessId, kvp.Key, kvp.Value, outFileCategories);\
+                \}\
+\
+                else if (kvp.Key == "hours")\
+                \{\
+                    printHours (theBusinessId, kvp.Key, kvp.Value, outFileHours);\
+                \}\
+\
+                else\
+                \{\
+                    //insertStatement += kvp.Key;\
+                    //insertStatement += ", ";\
+                    insertValues +=  "\\'";\
+                    insertValues += kvp.Value;\
+                    insertValues += "\\', ";\
+                    /*\
+\pard\pardeftab720\sl360\partightenfactor0
+\cf2                     if (whereTo == 0)\
+                    \{\
+                        //System.Console.Write("\\'" + kvp.Value + "\\', ");\
+\
+                    \} // end if screen\
+                    else\
+                    \{\
+                        outFile.Write("\\'" + kvp.Value + "\\', ");\
+\
+                    \} // end else, file\
+                    */\
+                    \
+                    \
+                \} // end else, just print the value \
+                \
+            \} // end foreach loop\
+\
+                // Add a newline:\
+\
+            // remove trailining commas and spaces, append values to statement:\
+            \
+            insertValues = insertValues.Remove (insertValues.Length - 2);\
+            insertStatement = insertStatement.Remove (insertStatement.Length - 2);\
+            //insertStatement += ") VALUES (";\
+            insertStatement += insertValues;\
+            insertStatement += ");\\n";\
+            \
+            if (whereTo == 0)\
+            \{\
+                //System.Console.Write(");\\n");\
+                System.Console.Write (insertStatement);\
+\
+            \} // end if screen\
+            else\
+            \{\
+                //outFile.Write(");\\r\\n");\
+                outFile.Write (insertStatement);\
+\
+            \} // end else, file\
+            \
+            \
+        \} // end printLine function \
+\
+        /////\
+        static void printLineReview(string testLine, System.IO.StreamWriter outFile)\
+        \{\
+            var jObj = JObject.Parse(testLine);\
+            string newValue = "";\
+\
+                // loop through each key-value-pair:\
+\
+            insertStatement = "INSERT INTO Review (review_id_num, user_id_num, business_id_num, stars, date, text, useful, funny, cool) VALUES (  ";\
+            insertValues = "";\
+\
+            foreach (var kvp in jObj.Cast<KeyValuePair<string, JToken>>().ToList())\
+            \{\
+                //var str1 = JsonConvert.SerializeObject(jObj);\
+                var str1 = JsonConvert.SerializeObject(kvp.Value);\
+                \
+                string myString = str1;\
+\
+                insertValues +=  "\\'";\
+                \
+                int myStringLength = myString.Length;\
+                for (int i = 0; i < myStringLength; i++)\
+                \{\
+                        // if there is an apostrophe, use an escape character on it:\
+\
+                    if (myString[i] == '\\'')\
+                    \{\
+                        insertValues += '\\'';\
+                        insertValues += '\\'';\
+                    \}\
+                    else if (myString[i] == '\\"')\
+                    \{\
+                        // do nothing, don't add double quotes\
+                    \}\
+                    else \
+                    \{\
+                        insertValues += myString[i];\
+                    \}\
+                    \
+                \}\
+                \
+                //insertValues += kvp.Value;\
+                insertValues += "\\', ";\
+                    \
+            \} // end foreach loop\
+\
+                // Add a newline:\
+\
+            // remove trailining commas and spaces, append values to statement:\
+            \
+            insertValues = insertValues.Remove (insertValues.Length - 2);\
+            insertStatement = insertStatement.Remove (insertStatement.Length - 2);\
+            //insertStatement += ") VALUES (";\
+            insertStatement += insertValues;\
+            insertStatement += ");\\n";\
+            \
+            if (whereTo == 0)\
+            \{\
+                //System.Console.Write(");\\n");\
+                System.Console.Write (insertStatement);\
+\
+            \} // end if screen\
+            else\
+            \{\
+                //outFile.Write(");\\r\\n");\
+                outFile.Write (insertStatement);\
+\
+            \} // end else, file\
+            \
+            \
+        \} // end printLineReview function \
+\
+        /////\
+\
+\
+        static void printKeys (string testLine, System.IO.StreamWriter outFile)\
+        \{\
+                // Parse as a JObject:\
+\
+            var jObj = JObject.Parse(testLine);\
+\
+\
+                // Print the keys on the first line:\
+            \
+            foreach (var kvp in jObj.Cast<KeyValuePair<string, JToken>>().ToList())\
+            \{\
+                    // If the value is a JObject, wrap it in square brackets:\
+\
+                if ((kvp.Value.GetType()) == typeof(Newtonsoft.Json.Linq.JObject))\
+                \{\
+                    if (whereTo == 0)\
+                    \{\
+                        System.Console.Write("[" + kvp.Key + "], ");\
+\
+                    \} // end if screen \
+                    else\
+                    \{\
+                        outFile.Write("[" + kvp.Key + "], ");\
+\
+                    \} // end else, file\
+                    \
+                \} // end wrap JObjects in square brackets\
+                else\
+                \{\
+                    if (whereTo == 0)\
+                    \{\
+                        System.Console.Write(kvp.Key + ", ");\
+\
+                    \} // end if screen\
+                    else\
+                    \{\
+                        outFile.Write(kvp.Key + ", ");\
+\
+                    \} // end else, file\
+                    \
+                \} // end else just print key \
+                \
+\
+            \} // end foreach loop\
+\
+                // Add a newline:\
+\
+            if (whereTo == 0)\
+            \{\
+                System.Console.Write("\\n");\
+\
+            \} // end if screen\
+            else\
+            \{\
+                outFile.Write("\\r\\n");\
+\
+            \} // end else, file\
+            \
+        \} // end printKeys function \
+\
+\
+        static void printObject (JToken theObject, System.IO.StreamWriter outFile)\
+        \{\
+            foreach (var kvp in theObject.Cast<KeyValuePair<string, JToken>>().ToList())\
+            \{\
+                \
+                if ((kvp.Value.GetType()) == typeof(Newtonsoft.Json.Linq.JObject))\
+                \{\
+                    if (whereTo == 0)\
+                    \{\
+                        System.Console.Write ("\\n" + kvp.Key + ": ");\
+\
+                    \} // end if screen \
+                    else\
+                    \{\
+                        outFile.Write("\\r\\n" + kvp.Key + ": ");\
+\
+                    \} // end else, file\
+                    \
+                    \
+                    printObject (kvp.Value, outFile);\
+\
+                \} // end recurse on objects\
+                else\
+                \{\
+                    if (whereTo == 0)\
+                    \{\
+                        System.Console.Write("(" + kvp.Key + ", " + kvp.Value + ") ");\
+\
+                    \} // end if screen \
+                    else\
+                    \{\
+                        outFile.Write("(" + kvp.Key + ", " + kvp.Value + ") ");\
+\
+                    \} // end else, file\
+                    \
+                \} // end, else, print the key and value as a tuple\
+                \
+                \
+\
+            \} // end foreach loop\
+            \
+\
+            if (whereTo == 0)\
+            \{\
+                System.Console.Write ("]\\n");\
+\
+            \} // end if screen\
+            else\
+            \{\
+                outFile.Write("]\\r\\n");\
+\
+            \} // end else, file\
+            \
+        \} // end printObject function\
+\
+        static void printAttributes (string theBusinessId, string theParent, string theKey, JToken theObject, System.IO.StreamWriter outFileAttributes)\
+        \{\
+            // declare new strings to build the insert Statesments:\
+\
+            string insertStatement = "";\
+            string insertValues = "";\
+\
+\
+            //insertStatement += "INSERT INTO HasAttribute (";\
+            //insertValues += "\\'";\
+            //insertValues += theBusinessId;\
+            //insertValues += "\\', ";\
+\
+            foreach (var kvp in theObject.Cast<KeyValuePair<string, JToken>>().ToList())\
+            \{\
+                // If the value is another JObject, it's key is the parent for all of it's \
+                // sub-attributes:\
+\
+                \
+\
+                if ((kvp.Value.GetType()) == typeof(Newtonsoft.Json.Linq.JObject))\
+                \{\
+                    outFileAttributes.Write ("INSERT INTO HasAttribute VALUES ('" + theBusinessId + "', '" + theParent + "', '" + kvp.Key + "'," + "'0');\\n");\
+                    theParent = kvp.Key;\
+                    printAttributes (theBusinessId, theParent, kvp.Key, kvp.Value, outFileAttributes);\
+\
+                \} // end recurse on objects\
+                else\
+                \{\
+                    outFileAttributes.Write ("INSERT INTO HasAttribute VALUES ('" + theBusinessId + "', '" + theParent + "', '" + kvp.Key + "', '" + kvp.Value + "');\\n");\
+                    \
+                \} // end, else, print the key and value as a tuple\
+                \
+                \
+\
+            \} // end foreach loop\
+            \
+            \
+        \} // end printAttributes function\
+\
+        static void printCategories (string theBusinessId, string theKey, JToken theObject, System.IO.StreamWriter outFileCategories)\
+        \{\
+            // declare new strings to build the insert Statesments:\
+\
+            string insertStatement = "";\
+            string insertValues = "";\
+\
+\
+            //foreach (var kvp in theObject.Cast<KeyValuePair<string, JToken>>().ToList())\
+            foreach (var kvp in theObject)\
+            \{\
+                // If the value is another JObject, it's key is the parent for all of it's \
+                // sub-attributes:\
+                \
+                outFileCategories.Write ("INSERT INTO Category VALUES ('" + theBusinessId +  "', '" + kvp + "');\\n");\
+\
+            \} // end foreach loop\
+            \
+            \
+        \} // end printCategories function\
+\
+        /////\
+        static void printHours (string theBusinessId, string theKey, JToken theObject, System.IO.StreamWriter outFileHours)\
+        \{\
+            // declare new strings to build the insert Statesments:\
+\
+            string insertStatement = "";\
+            string insertValues = "";\
+\
+\
+            foreach (var kvp in theObject.Cast<KeyValuePair<string, JToken>>().ToList())\
+            \{\
+                // If the value is another JObject, it's key is the parent for all of it's \
+                // sub-attributes:\
+\
+                \
+                /*\
+                if ((kvp.Value.GetType()) == typeof(Newtonsoft.Json.Linq.JObject))\
+                \{\
+                    outFileHours.Write ("INSERT INTO Hours ('" + theBusinessId + "', '" + kvp.Key + "');\\n");\
+                    printHours (theBusinessId, kvp.Key, kvp.Value, outFileHours);\
+\
+                \} // end recurse on objects\
+                else\
+                \{\
+                    outFileHours.Write ("INSERT INTO Hours ('" + theBusinessId + "', '" + kvp.Key + "', '" + kvp.Value + "');\\n");\
+                    \
+                    \
+                \} // end, else, print the key and value as a tuple\
+                */\
+                outFileHours.Write ("INSERT INTO Hours VALUES ('" + theBusinessId + "', '" + kvp.Key + "', '" + kvp.Value + "');\\n");\
+                \
+                \
+\
+            \} // end foreach loop\
+            \
+            \
+        \} // end printHours function\
+\
+        /////\
+\
+        static void printArray(JToken theObject, System.IO.StreamWriter outFile)\
+        \{\
+            foreach (var kvp in theObject)\
+            \{\
+                if (whereTo == 0)\
+                \{\
+                    System.Console.Write("(" + kvp + ") ");\
+\
+                \} // end if screen\
+                else\
+                \{\
+                    outFile.Write("(" + kvp + ") ");\
+\
+                \} // end else, file\
+                \
+            \} // end foreach loop\
+\
+            if (whereTo == 0)\
+            \{\
+                System.Console.Write("]\\n");\
+\
+            \} // end if screen\
+            else\
+            \{\
+                outFile.Write("]\\r\\n");\
+\
+\
+            \} // end else, file\
+            \
+        \} // end printArray function\
+\
+\
+\
+        static void Main(string[] args)\
+        \{\
+            int i = 0;\
+\
+                // Store all the files we need to parse in an array:\
+                // Use small files for testing, \
+                // Use full size files for go-time\
+\
+            string[] theFile = \{ "yelp_review.JSON" \};\
+            //string[] theFile = \{ "yelp_business.JSON" \};\
+            //string[] theFile = \{ "yelp_business_small.JSON", "yelp_checkin_small.JSON", "yelp_review_small.JSON", "yelp_user_small.JSON" \};\
+            //string[] theFile = \{ "yelp_business.JSON", "yelp_checkin.JSON", "yelp_review.JSON", "yelp_user.JSON" \};\
+\
+                // set the path:\
+\
+            //string thePath = "\\\\Users\\\\Marcus\\\\Documents\\\\Classes\\\\2019\\\\Spring\\\\Databases\\\\Project\\\\Mileston_1\\\\Yelp-CptS451-2019\\\\";\
+\
+            for (i = 0; i < theFile.Length; i++)\
+            \{\
+                    // Open the file for reading:\
+\
+                System.IO.StreamReader\
+                    file = new\
+                    //System.IO.StreamReader(@thePath + theFile[i]);\
+                    System.IO.StreamReader(@theFile[i]);\
+\
+                    // Open file for writing:\
+                    // replace "JSON" by "txt"\
+\
+                //string newFile = Regex.Replace(theFile[i], @"JSON", "txt");\
+                //string newFile = "insertBusiness.sql";\
+                string newFile = "insertReview.sql";\
+\
+                System.IO.StreamWriter\
+                    outFile = new\
+                    //System.IO.StreamWriter(@thePath + newFile);\
+                    System.IO.StreamWriter(@newFile);\
+\
+                System.IO.StreamWriter\
+                    outFileAttributes = new\
+                    System.IO.StreamWriter(@"Attributes.sql");\
+\
+                System.IO.StreamWriter\
+                    outFileCategories = new\
+                    System.IO.StreamWriter(@"Categories.sql");\
+\
+                System.IO.StreamWriter\
+                    outFileHours = new\
+                    System.IO.StreamWriter(@"Hours.sql");\
+\
+                \
+                    // read the first line:\
+\
+                var testLine = @file.ReadLine();\
+\
+                    // print the field names:\
+\
+                printKeys(testLine, outFile);\
+\
+                    // Parse as a JObject:\
+\
+                var jObj = JObject.Parse(testLine);\
+\
+\
+                    // Now loop to get the remaining lines:\
+\
+                while ((testLine = @file.ReadLine()) != null)\
+                \{\
+                    printLineReview (testLine, outFile);\
+\
+                \} // end while loop \
+\
+                // Add a newline:\
+\
+                if (whereTo == 0)\
+                \{\
+                    System.Console.Write("\\n");\
+\
+                \} // end if screen\
+                else\
+                \{\
+                    outFile.Write("\\r\\n");\
+\
+                \} // end else, file\
+                \
+                file.Close ();\
+                outFile.Close ();\
+                outFileAttributes.Close ();\
+                outFileCategories.Close ();\
+                outFileHours.Close ();\
+                    \
+            \} // end iterate through all files\
+\
+            // Wait for input from user before closing window:\
+\
+            System.Console.WriteLine ("*** Complete ***");\
+            System.Console.ReadLine ();\
+\
+        \} // end Main \
+\
+    \} // end Program \
+\
+\} // end namespace JSONTest\
+\
+}

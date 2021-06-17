@@ -1,0 +1,523 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1671\cocoasubrtf200
+{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red255\green255\blue255;\red89\green138\blue67;
+\red202\green202\blue202;\red70\green137\blue204;\red67\green192\blue160;\red140\green211\blue254;\red167\green197\blue152;
+\red194\green126\blue101;\red212\green214\blue154;\red183\green111\blue179;\red205\green173\blue106;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;\cssrgb\c100000\c100000\c100000;\cssrgb\c41569\c60000\c33333;
+\cssrgb\c83137\c83137\c83137;\cssrgb\c33725\c61176\c83922;\cssrgb\c30588\c78824\c69020;\cssrgb\c61176\c86275\c99608;\cssrgb\c70980\c80784\c65882;
+\cssrgb\c80784\c56863\c47059;\cssrgb\c86275\c86275\c66667;\cssrgb\c77255\c52549\c75294;\cssrgb\c84314\c72941\c49020;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\sl360\partightenfactor0
+
+\f0\fs24 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec4 /*\strokec5 \
+\strokec4 * Team "Whatever"\strokec5 \
+\strokec4 *\strokec5 \
+\strokec4 * Team Members:\strokec5 \
+\strokec4 *\strokec5 \
+\strokec4 * Marcus Blaisdell\strokec5 \
+\strokec4 * Kimi Phan\strokec5 \
+\strokec4 * Hannah Bogen\strokec5 \
+\strokec4 * Joseph Crissey\strokec5 \
+\strokec4 *\strokec5 \
+\strokec4 * Milestone 1: Parser program \strokec5 \
+\strokec4 *\strokec5 \
+\strokec4 * Code Author: Marcus Blaisdell\strokec5 \
+\strokec4 *\strokec5 \
+\strokec4 * This program was written in C#, using Visual Studio Code on Mac\strokec5 \
+\strokec4 * Modified from previous version written in Visual Studio 2015 on PC\strokec5 \
+\strokec4 * \strokec5 \
+\strokec4 * It makes use of the Newtonsoft library for JSON handling \strokec5 \
+\strokec4 *\strokec5 \
+\strokec4 */\strokec5 \
+\
+\pard\pardeftab720\sl360\partightenfactor0
+\cf2 \strokec6 using\strokec5  \strokec7 System\strokec5 ;\
+\strokec6 using\strokec5  \strokec7 System\strokec5 .\strokec7 Collections\strokec5 ;\
+\strokec6 using\strokec5  \strokec7 System\strokec5 .\strokec7 Collections\strokec5 .\strokec7 Generic\strokec5 ;\
+\strokec6 using\strokec5  \strokec7 System\strokec5 .\strokec7 Linq\strokec5 ;\
+\strokec6 using\strokec5  \strokec7 System\strokec5 .\strokec7 Text\strokec5 ;\
+\strokec6 using\strokec5  \strokec7 System\strokec5 .\strokec7 Threading\strokec5 .\strokec7 Tasks\strokec5 ;\
+\
+\strokec6 using\strokec5  \strokec7 Newtonsoft\strokec5 .\strokec7 Json\strokec5 ;\
+\strokec6 using\strokec5  \strokec7 Newtonsoft\strokec5 .\strokec7 Json\strokec5 .\strokec7 Linq\strokec5 ;\
+\strokec6 using\strokec5  \strokec7 System\strokec5 .\strokec7 Text\strokec5 .\strokec7 RegularExpressions\strokec5 ;\
+\
+\strokec6 namespace\strokec5  \strokec7 JSONTest\strokec5 \
+\{\
+    \strokec6 class\strokec5  \strokec7 Program\strokec5 \
+    \{\
+            \strokec4 // global variable 'whereTo', \strokec5 \
+            \strokec4 // if 0, write to screen,\strokec5 \
+            \strokec4 // if 1, write to file:\strokec5 \
+\
+        \strokec6 public\strokec5  \strokec6 static\strokec5  \strokec6 int\strokec5  \strokec8 whereTo\strokec5  = \strokec9 1\strokec5 ;\
+        \strokec6 public\strokec5  \strokec6 static\strokec5  \strokec6 string\strokec5  \strokec8 insertStatement\strokec5  = \strokec10 ""\strokec5 ;\
+        \strokec6 public\strokec5  \strokec6 static\strokec5  \strokec6 string\strokec5  \strokec8 insertValues\strokec5  = \strokec10 ""\strokec5 ;\
+\
+        \strokec6 static\strokec5  \strokec6 void\strokec5  \strokec11 printLineUsers\strokec5  (\strokec6 string\strokec5  \strokec8 testLine\strokec5 , \strokec7 System\strokec5 .\strokec7 IO\strokec5 .\strokec7 StreamWriter\strokec5  \strokec8 outFile\strokec5 , \strokec7 System\strokec5 .\strokec7 IO\strokec5 .\strokec7 StreamWriter\strokec5  \strokec8 outFileElite\strokec5 , \strokec7 System\strokec5 .\strokec7 IO\strokec5 .\strokec7 StreamWriter\strokec5  \strokec8 outFileFriends\strokec5 )\
+        \{\
+                \strokec4 // test for an empty row:\strokec5 \
+                \strokec4 // if row is empty, return to caller \strokec5 \
+\
+            \strokec12 if\strokec5  (\strokec8 testLine\strokec5 .\strokec8 Length\strokec5  == \strokec9 0\strokec5 )\
+            \{\
+                \strokec12 return\strokec5 ;\
+            \} \strokec4 // end return to caller if row is blank\strokec5 \
+\
+            \strokec6 var\strokec5  \strokec8 jObj\strokec5  = \strokec8 JObject\strokec5 .\strokec11 Parse\strokec5 (\strokec8 testLine\strokec5 );\
+            \strokec6 string\strokec5  \strokec8 theUserId\strokec5  = \strokec10 ""\strokec5 ;\
+\
+                \strokec4 // loop through each key-value-pair:\strokec5 \
+\
+            \strokec8 insertStatement\strokec5  = \strokec10 "INSERT INTO Users (avg_stars, c_cool, c_cute, c_funny, c_hot, c_list, c_more, c_note, c_photos, c_plain, c_profile, c_writer, cool, fans, funny, name, review_count, useful, user_id_num, yelping_since) VALUES (  "\strokec5 ;\
+            \strokec8 insertValues\strokec5  = \strokec10 ""\strokec5 ;\
+\
+            \strokec4 // Find user_id:\strokec5 \
+\
+            \strokec12 foreach\strokec5  (\strokec6 var\strokec5  \strokec8 kvp\strokec5  \strokec12 in\strokec5  \strokec8 jObj\strokec5 .\strokec11 Cast\strokec5 <\strokec7 KeyValuePair\strokec5 <\strokec6 string\strokec5 , \strokec7 JToken\strokec5 >>().\strokec11 ToList\strokec5 ())\
+            \{\
+                \strokec12 if\strokec5  (\strokec8 kvp\strokec5 .\strokec8 Key\strokec5  == \strokec10 "user_id"\strokec5 )\
+                \{\
+                    \strokec8 theUserId\strokec5  += \strokec8 kvp\strokec5 .\strokec8 Value\strokec5 ;\
+                \} \strokec4 // end capture user id\strokec5 \
+            \} \strokec4 // end iterate through entire JSON object to get user_id \strokec5 \
+\
+                \strokec4 // now, iterate through again to be able to use user_id as primary key for ...\strokec5 \
+\
+            \strokec12 foreach\strokec5  (\strokec6 var\strokec5  \strokec8 kvp\strokec5  \strokec12 in\strokec5  \strokec8 jObj\strokec5 .\strokec11 Cast\strokec5 <\strokec7 KeyValuePair\strokec5 <\strokec6 string\strokec5 , \strokec7 JToken\strokec5 >>().\strokec11 ToList\strokec5 ())\
+            \{\
+                \strokec12 if\strokec5  (\strokec8 kvp\strokec5 .\strokec8 Key\strokec5  == \strokec10 "friends"\strokec5 )\
+                \{\
+                    \strokec11 printFriends\strokec5  (\strokec8 theUserId\strokec5 , \strokec8 kvp\strokec5 .\strokec8 Value\strokec5 , \strokec8 outFileFriends\strokec5 );\
+                \}\
+\
+                \strokec12 else\strokec5  \strokec12 if\strokec5  (\strokec8 kvp\strokec5 .\strokec8 Key\strokec5  == \strokec10 "elite"\strokec5 )\
+                \{\
+                    \strokec11 printElite\strokec5  (\strokec8 theUserId\strokec5 , \strokec8 kvp\strokec5 .\strokec8 Value\strokec5 , \strokec8 outFileElite\strokec5 );\
+                \}\
+\
+                \strokec12 else\strokec5 \
+                \{\
+                    \strokec6 var\strokec5  \strokec8 str1\strokec5  = \strokec8 JsonConvert\strokec5 .\strokec11 SerializeObject\strokec5 (\strokec8 kvp\strokec5 .\strokec8 Value\strokec5 );\
+\
+                    \strokec6 string\strokec5  \strokec8 myString\strokec5  = \strokec8 str1\strokec5 ;\
+\
+                    \strokec4 //insertStatement += kvp.Key;\strokec5 \
+                    \strokec4 //insertStatement += ", ";\strokec5 \
+                    \strokec8 insertValues\strokec5  +=  \strokec10 "\strokec13 \\'\strokec10 "\strokec5 ;\
+                    \strokec4 //insertValues += kvp.Value;\strokec5 \
+                    \strokec6 int\strokec5  \strokec8 myStringLength\strokec5  = \strokec8 myString\strokec5 .\strokec8 Length\strokec5 ;\
+\
+                    \strokec12 for\strokec5  (\strokec6 int\strokec5  \strokec8 i\strokec5  = \strokec9 0\strokec5 ; \strokec8 i\strokec5  < \strokec8 myStringLength\strokec5 ; \strokec8 i\strokec5 ++)\
+                \{\
+                        \strokec4 // if there is an apostrophe, use an escape character on it:\strokec5 \
+\
+                    \strokec12 if\strokec5  (\strokec8 myString\strokec5 [\strokec8 i\strokec5 ] == \strokec10 '\strokec13 \\'\strokec10 '\strokec5 )\
+                    \{\
+                        \strokec8 insertValues\strokec5  += \strokec10 '\strokec13 \\'\strokec10 '\strokec5 ;\
+                        \strokec8 insertValues\strokec5  += \strokec10 '\strokec13 \\'\strokec10 '\strokec5 ;\
+                    \}\
+                    \strokec12 else\strokec5  \strokec12 if\strokec5  (\strokec8 myString\strokec5 [\strokec8 i\strokec5 ] == \strokec10 '\strokec13 \\"\strokec10 '\strokec5 )\
+                    \{\
+                        \strokec4 // do nothing, don't add double quotes\strokec5 \
+                    \}\
+                    \strokec12 else\strokec5  \
+                    \{\
+                        \strokec8 insertValues\strokec5  += \strokec8 myString\strokec5 [\strokec8 i\strokec5 ];\
+                    \}\
+                    \
+                \}\
+\
+                    \strokec8 insertValues\strokec5  += \strokec10 "\strokec13 \\'\strokec10 , "\strokec5 ;\
+                    \strokec4 /*\strokec5 \
+\pard\pardeftab720\sl360\partightenfactor0
+\cf2 \strokec4                     if (whereTo == 0)\strokec5 \
+\strokec4                     \{\strokec5 \
+\strokec4                         //System.Console.Write("\\'" + kvp.Value + "\\', ");\strokec5 \
+\
+\strokec4                     \} // end if screen\strokec5 \
+\strokec4                     else\strokec5 \
+\strokec4                     \{\strokec5 \
+\strokec4                         outFile.Write("\\'" + kvp.Value + "\\', ");\strokec5 \
+\
+\strokec4                     \} // end else, file\strokec5 \
+\strokec4                     */\strokec5 \
+                    \
+                    \
+                \} \strokec4 // end else, just print the value \strokec5 \
+                \
+            \} \strokec4 // end foreach loop\strokec5 \
+\
+                \strokec4 // Add a newline:\strokec5 \
+\
+            \strokec4 // remove trailining commas and spaces, append values to statement:\strokec5 \
+            \
+            \strokec8 insertValues\strokec5  = \strokec8 insertValues\strokec5 .\strokec11 Remove\strokec5  (\strokec8 insertValues\strokec5 .\strokec8 Length\strokec5  - \strokec9 2\strokec5 );\
+            \strokec8 insertStatement\strokec5  = \strokec8 insertStatement\strokec5 .\strokec11 Remove\strokec5  (\strokec8 insertStatement\strokec5 .\strokec8 Length\strokec5  - \strokec9 2\strokec5 );\
+            \strokec4 //insertStatement += ") VALUES (";\strokec5 \
+            \strokec8 insertStatement\strokec5  += \strokec8 insertValues\strokec5 ;\
+            \strokec8 insertStatement\strokec5  += \strokec10 ");\strokec13 \\n\strokec10 "\strokec5 ;\
+            \
+            \strokec12 if\strokec5  (\strokec8 whereTo\strokec5  == \strokec9 0\strokec5 )\
+            \{\
+                \strokec4 //System.Console.Write(");\\n");\strokec5 \
+                \strokec8 System\strokec5 .\strokec8 Console\strokec5 .\strokec11 Write\strokec5  (\strokec8 insertStatement\strokec5 );\
+\
+            \} \strokec4 // end if screen\strokec5 \
+            \strokec12 else\strokec5 \
+            \{\
+                \strokec4 //outFile.Write(");\\r\\n");\strokec5 \
+                \strokec8 outFile\strokec5 .\strokec11 Write\strokec5  (\strokec8 insertStatement\strokec5 );\
+\
+            \} \strokec4 // end else, file\strokec5 \
+            \
+            \
+        \} \strokec4 // end printLine function \strokec5 \
+\
+\
+        \strokec6 static\strokec5  \strokec6 void\strokec5  \strokec11 printKeys\strokec5  (\strokec6 string\strokec5  \strokec8 testLine\strokec5 , \strokec7 System\strokec5 .\strokec7 IO\strokec5 .\strokec7 StreamWriter\strokec5  \strokec8 outFile\strokec5 )\
+        \{\
+                \strokec4 // Parse as a JObject:\strokec5 \
+\
+            \strokec6 var\strokec5  \strokec8 jObj\strokec5  = \strokec8 JObject\strokec5 .\strokec11 Parse\strokec5 (\strokec8 testLine\strokec5 );\
+\
+\
+                \strokec4 // Print the keys on the first line:\strokec5 \
+            \
+            \strokec12 foreach\strokec5  (\strokec6 var\strokec5  \strokec8 kvp\strokec5  \strokec12 in\strokec5  \strokec8 jObj\strokec5 .\strokec11 Cast\strokec5 <\strokec7 KeyValuePair\strokec5 <\strokec6 string\strokec5 , \strokec7 JToken\strokec5 >>().\strokec11 ToList\strokec5 ())\
+            \{\
+                    \strokec4 // If the value is a JObject, wrap it in square brackets:\strokec5 \
+\
+                \strokec12 if\strokec5  ((\strokec8 kvp\strokec5 .\strokec8 Value\strokec5 .\strokec11 GetType\strokec5 ()) == \strokec6 typeof\strokec5 (\strokec7 Newtonsoft\strokec5 .\strokec7 Json\strokec5 .\strokec7 Linq\strokec5 .\strokec7 JObject\strokec5 ))\
+                \{\
+                    \strokec12 if\strokec5  (\strokec8 whereTo\strokec5  == \strokec9 0\strokec5 )\
+                    \{\
+                        \strokec8 System\strokec5 .\strokec8 Console\strokec5 .\strokec11 Write\strokec5 (\strokec10 "["\strokec5  + \strokec8 kvp\strokec5 .\strokec8 Key\strokec5  + \strokec10 "], "\strokec5 );\
+\
+                    \} \strokec4 // end if screen \strokec5 \
+                    \strokec12 else\strokec5 \
+                    \{\
+                        \strokec8 outFile\strokec5 .\strokec11 Write\strokec5 (\strokec10 "["\strokec5  + \strokec8 kvp\strokec5 .\strokec8 Key\strokec5  + \strokec10 "], "\strokec5 );\
+\
+                    \} \strokec4 // end else, file\strokec5 \
+                    \
+                \} \strokec4 // end wrap JObjects in square brackets\strokec5 \
+                \strokec12 else\strokec5 \
+                \{\
+                    \strokec12 if\strokec5  (\strokec8 whereTo\strokec5  == \strokec9 0\strokec5 )\
+                    \{\
+                        \strokec8 System\strokec5 .\strokec8 Console\strokec5 .\strokec11 Write\strokec5 (\strokec8 kvp\strokec5 .\strokec8 Key\strokec5  + \strokec10 ", "\strokec5 );\
+\
+                    \} \strokec4 // end if screen\strokec5 \
+                    \strokec12 else\strokec5 \
+                    \{\
+                        \strokec8 outFile\strokec5 .\strokec11 Write\strokec5 (\strokec8 kvp\strokec5 .\strokec8 Key\strokec5  + \strokec10 ", "\strokec5 );\
+\
+                    \} \strokec4 // end else, file\strokec5 \
+                    \
+                \} \strokec4 // end else just print key \strokec5 \
+                \
+\
+            \} \strokec4 // end foreach loop\strokec5 \
+\
+                \strokec4 // Add a newline:\strokec5 \
+\
+            \strokec12 if\strokec5  (\strokec8 whereTo\strokec5  == \strokec9 0\strokec5 )\
+            \{\
+                \strokec8 System\strokec5 .\strokec8 Console\strokec5 .\strokec11 Write\strokec5 (\strokec10 "\strokec13 \\n\strokec10 "\strokec5 );\
+\
+            \} \strokec4 // end if screen\strokec5 \
+            \strokec12 else\strokec5 \
+            \{\
+                \strokec8 outFile\strokec5 .\strokec11 Write\strokec5 (\strokec10 "\strokec13 \\r\\n\strokec10 "\strokec5 );\
+\
+            \} \strokec4 // end else, file\strokec5 \
+            \
+        \} \strokec4 // end printKeys function \strokec5 \
+\
+\
+        \strokec6 static\strokec5  \strokec6 void\strokec5  \strokec11 printObject\strokec5  (\strokec7 JToken\strokec5  \strokec8 theObject\strokec5 , \strokec7 System\strokec5 .\strokec7 IO\strokec5 .\strokec7 StreamWriter\strokec5  \strokec8 outFile\strokec5 )\
+        \{\
+            \strokec12 foreach\strokec5  (\strokec6 var\strokec5  \strokec8 kvp\strokec5  \strokec12 in\strokec5  \strokec8 theObject\strokec5 .\strokec11 Cast\strokec5 <\strokec7 KeyValuePair\strokec5 <\strokec6 string\strokec5 , \strokec7 JToken\strokec5 >>().\strokec11 ToList\strokec5 ())\
+            \{\
+                \
+                \strokec12 if\strokec5  ((\strokec8 kvp\strokec5 .\strokec8 Value\strokec5 .\strokec11 GetType\strokec5 ()) == \strokec6 typeof\strokec5 (\strokec7 Newtonsoft\strokec5 .\strokec7 Json\strokec5 .\strokec7 Linq\strokec5 .\strokec7 JObject\strokec5 ))\
+                \{\
+                    \strokec12 if\strokec5  (\strokec8 whereTo\strokec5  == \strokec9 0\strokec5 )\
+                    \{\
+                        \strokec8 System\strokec5 .\strokec8 Console\strokec5 .\strokec11 Write\strokec5  (\strokec10 "\strokec13 \\n\strokec10 "\strokec5  + \strokec8 kvp\strokec5 .\strokec8 Key\strokec5  + \strokec10 ": "\strokec5 );\
+\
+                    \} \strokec4 // end if screen \strokec5 \
+                    \strokec12 else\strokec5 \
+                    \{\
+                        \strokec8 outFile\strokec5 .\strokec11 Write\strokec5 (\strokec10 "\strokec13 \\r\\n\strokec10 "\strokec5  + \strokec8 kvp\strokec5 .\strokec8 Key\strokec5  + \strokec10 ": "\strokec5 );\
+\
+                    \} \strokec4 // end else, file\strokec5 \
+                    \
+                    \
+                    \strokec11 printObject\strokec5  (\strokec8 kvp\strokec5 .\strokec8 Value\strokec5 , \strokec8 outFile\strokec5 );\
+\
+                \} \strokec4 // end recurse on objects\strokec5 \
+                \strokec12 else\strokec5 \
+                \{\
+                    \strokec12 if\strokec5  (\strokec8 whereTo\strokec5  == \strokec9 0\strokec5 )\
+                    \{\
+                        \strokec8 System\strokec5 .\strokec8 Console\strokec5 .\strokec11 Write\strokec5 (\strokec10 "("\strokec5  + \strokec8 kvp\strokec5 .\strokec8 Key\strokec5  + \strokec10 ", "\strokec5  + \strokec8 kvp\strokec5 .\strokec8 Value\strokec5  + \strokec10 ") "\strokec5 );\
+\
+                    \} \strokec4 // end if screen \strokec5 \
+                    \strokec12 else\strokec5 \
+                    \{\
+                        \strokec8 outFile\strokec5 .\strokec11 Write\strokec5 (\strokec10 "("\strokec5  + \strokec8 kvp\strokec5 .\strokec8 Key\strokec5  + \strokec10 ", "\strokec5  + \strokec8 kvp\strokec5 .\strokec8 Value\strokec5  + \strokec10 ") "\strokec5 );\
+\
+                    \} \strokec4 // end else, file\strokec5 \
+                    \
+                \} \strokec4 // end, else, print the key and value as a tuple\strokec5 \
+                \
+                \
+\
+            \} \strokec4 // end foreach loop\strokec5 \
+            \
+\
+            \strokec12 if\strokec5  (\strokec8 whereTo\strokec5  == \strokec9 0\strokec5 )\
+            \{\
+                \strokec8 System\strokec5 .\strokec8 Console\strokec5 .\strokec11 Write\strokec5  (\strokec10 "]\strokec13 \\n\strokec10 "\strokec5 );\
+\
+            \} \strokec4 // end if screen\strokec5 \
+            \strokec12 else\strokec5 \
+            \{\
+                \strokec8 outFile\strokec5 .\strokec11 Write\strokec5 (\strokec10 "]\strokec13 \\r\\n\strokec10 "\strokec5 );\
+\
+            \} \strokec4 // end else, file\strokec5 \
+            \
+        \} \strokec4 // end printObject function\strokec5 \
+\
+        \strokec6 static\strokec5  \strokec6 void\strokec5  \strokec11 printFriends\strokec5  (\strokec6 string\strokec5  \strokec8 theUserId\strokec5 , \strokec7 JToken\strokec5  \strokec8 theObject\strokec5 , \strokec7 System\strokec5 .\strokec7 IO\strokec5 .\strokec7 StreamWriter\strokec5  \strokec8 outFileFriends\strokec5 )\
+        \{\
+            \strokec4 // declare new strings to build the insert Statesments:\strokec5 \
+\
+            \strokec6 string\strokec5  \strokec8 insertStatement\strokec5  = \strokec10 ""\strokec5 ;\
+            \strokec6 string\strokec5  \strokec8 insertValues\strokec5  = \strokec10 ""\strokec5 ;\
+\
+            \strokec12 foreach\strokec5  (\strokec6 var\strokec5  \strokec8 kvp\strokec5  \strokec12 in\strokec5  \strokec8 theObject\strokec5 )\
+            \{\
+                \strokec8 outFileFriends\strokec5 .\strokec11 Write\strokec5  (\strokec10 "INSERT INTO Friend VALUES ('"\strokec5  + \strokec8 theUserId\strokec5  + \strokec10 "', '"\strokec5  + \strokec8 kvp\strokec5  + \strokec10 "');\strokec13 \\n\strokec10 "\strokec5 );\
+             \
+            \} \strokec4 // end foreach loop\strokec5 \
+            \
+            \
+        \} \strokec4 // end printFriends function\strokec5 \
+\
+        \strokec6 static\strokec5  \strokec6 void\strokec5  \strokec11 printElite\strokec5  (\strokec6 string\strokec5  \strokec8 theUserId\strokec5 , \strokec7 JToken\strokec5  \strokec8 theObject\strokec5 , \strokec7 System\strokec5 .\strokec7 IO\strokec5 .\strokec7 StreamWriter\strokec5  \strokec8 outFileElite\strokec5 )\
+        \{\
+            \strokec4 // declare new strings to build the insert Statesments:\strokec5 \
+\
+            \strokec6 string\strokec5  \strokec8 insertStatement\strokec5  = \strokec10 ""\strokec5 ;\
+            \strokec6 string\strokec5  \strokec8 insertValues\strokec5  = \strokec10 ""\strokec5 ;\
+\
+\
+            \strokec4 //foreach (var kvp in theObject.Cast<KeyValuePair<string, JToken>>().ToList())\strokec5 \
+            \strokec12 foreach\strokec5  (\strokec6 var\strokec5  \strokec8 kvp\strokec5  \strokec12 in\strokec5  \strokec8 theObject\strokec5 )\
+            \{\
+                \strokec4 // If the value is another JObject, it's key is the parent for all of it's \strokec5 \
+                \strokec4 // sub-attributes:\strokec5 \
+                \
+                \strokec8 outFileElite\strokec5 .\strokec11 Write\strokec5  (\strokec10 "INSERT INTO Elite VALUES ('"\strokec5  + \strokec8 theUserId\strokec5  +  \strokec10 "', '"\strokec5  + \strokec8 kvp\strokec5  + \strokec10 "');\strokec13 \\n\strokec10 "\strokec5 );\
+\
+            \} \strokec4 // end foreach loop\strokec5 \
+            \
+            \
+        \} \strokec4 // end printElite function\strokec5 \
+\
+        \strokec4 /////\strokec5 \
+        \strokec6 static\strokec5  \strokec6 void\strokec5  \strokec11 printHours\strokec5  (\strokec6 string\strokec5  \strokec8 theBusinessId\strokec5 , \strokec6 string\strokec5  \strokec8 theKey\strokec5 , \strokec7 JToken\strokec5  \strokec8 theObject\strokec5 , \strokec7 System\strokec5 .\strokec7 IO\strokec5 .\strokec7 StreamWriter\strokec5  \strokec8 outFileHours\strokec5 )\
+        \{\
+            \strokec4 // declare new strings to build the insert Statesments:\strokec5 \
+\
+            \strokec6 string\strokec5  \strokec8 insertStatement\strokec5  = \strokec10 ""\strokec5 ;\
+            \strokec6 string\strokec5  \strokec8 insertValues\strokec5  = \strokec10 ""\strokec5 ;\
+\
+\
+            \strokec12 foreach\strokec5  (\strokec6 var\strokec5  \strokec8 kvp\strokec5  \strokec12 in\strokec5  \strokec8 theObject\strokec5 .\strokec11 Cast\strokec5 <\strokec7 KeyValuePair\strokec5 <\strokec6 string\strokec5 , \strokec7 JToken\strokec5 >>().\strokec11 ToList\strokec5 ())\
+            \{\
+                \strokec4 // If the value is another JObject, it's key is the parent for all of it's \strokec5 \
+                \strokec4 // sub-attributes:\strokec5 \
+\
+                \
+                \strokec4 /*\strokec5 \
+\strokec4                 if ((kvp.Value.GetType()) == typeof(Newtonsoft.Json.Linq.JObject))\strokec5 \
+\strokec4                 \{\strokec5 \
+\strokec4                     outFileHours.Write ("INSERT INTO Hours ('" + theBusinessId + "', '" + kvp.Key + "');\\n");\strokec5 \
+\strokec4                     printHours (theBusinessId, kvp.Key, kvp.Value, outFileHours);\strokec5 \
+\
+\strokec4                 \} // end recurse on objects\strokec5 \
+\strokec4                 else\strokec5 \
+\strokec4                 \{\strokec5 \
+\strokec4                     outFileHours.Write ("INSERT INTO Hours ('" + theBusinessId + "', '" + kvp.Key + "', '" + kvp.Value + "');\\n");\strokec5 \
+\strokec4                     \strokec5 \
+\strokec4                     \strokec5 \
+\strokec4                 \} // end, else, print the key and value as a tuple\strokec5 \
+\strokec4                 */\strokec5 \
+                \strokec8 outFileHours\strokec5 .\strokec11 Write\strokec5  (\strokec10 "INSERT INTO Hours VALUES ('"\strokec5  + \strokec8 theBusinessId\strokec5  + \strokec10 "', '"\strokec5  + \strokec8 kvp\strokec5 .\strokec8 Key\strokec5  + \strokec10 "', '"\strokec5  + \strokec8 kvp\strokec5 .\strokec8 Value\strokec5  + \strokec10 "');\strokec13 \\n\strokec10 "\strokec5 );\
+                \
+                \
+\
+            \} \strokec4 // end foreach loop\strokec5 \
+            \
+            \
+        \} \strokec4 // end printHours function\strokec5 \
+\
+        \strokec4 /////\strokec5 \
+\
+        \strokec6 static\strokec5  \strokec6 int\strokec5  \strokec11 countArray\strokec5  (\strokec7 JToken\strokec5  \strokec8 theArray\strokec5 )\
+        \{\
+            \strokec6 int\strokec5  \strokec8 count\strokec5  = \strokec9 0\strokec5 ;\
+\
+            \strokec12 foreach\strokec5  (\strokec6 var\strokec5  \strokec8 kvp\strokec5  \strokec12 in\strokec5  \strokec8 theArray\strokec5 )\
+            \{\
+                \strokec8 count\strokec5 ++;\
+            \}\
+\
+            \strokec12 return\strokec5  \strokec8 count\strokec5 ;\
+        \}\
+\
+        \strokec6 static\strokec5  \strokec6 void\strokec5  \strokec11 printArray\strokec5 (\strokec7 JToken\strokec5  \strokec8 theObject\strokec5 , \strokec7 System\strokec5 .\strokec7 IO\strokec5 .\strokec7 StreamWriter\strokec5  \strokec8 outFile\strokec5 )\
+        \{\
+            \strokec12 foreach\strokec5  (\strokec6 var\strokec5  \strokec8 kvp\strokec5  \strokec12 in\strokec5  \strokec8 theObject\strokec5 )\
+            \{\
+                \strokec12 if\strokec5  (\strokec8 whereTo\strokec5  == \strokec9 0\strokec5 )\
+                \{\
+                    \strokec8 System\strokec5 .\strokec8 Console\strokec5 .\strokec11 Write\strokec5 (\strokec10 "("\strokec5  + \strokec8 kvp\strokec5  + \strokec10 ") "\strokec5 );\
+\
+                \} \strokec4 // end if screen\strokec5 \
+                \strokec12 else\strokec5 \
+                \{\
+                    \strokec8 outFile\strokec5 .\strokec11 Write\strokec5 (\strokec10 "("\strokec5  + \strokec8 kvp\strokec5  + \strokec10 ") "\strokec5 );\
+\
+                \} \strokec4 // end else, file\strokec5 \
+                \
+            \} \strokec4 // end foreach loop\strokec5 \
+\
+            \strokec12 if\strokec5  (\strokec8 whereTo\strokec5  == \strokec9 0\strokec5 )\
+            \{\
+                \strokec8 System\strokec5 .\strokec8 Console\strokec5 .\strokec11 Write\strokec5 (\strokec10 "]\strokec13 \\n\strokec10 "\strokec5 );\
+\
+            \} \strokec4 // end if screen\strokec5 \
+            \strokec12 else\strokec5 \
+            \{\
+                \strokec8 outFile\strokec5 .\strokec11 Write\strokec5 (\strokec10 "]\strokec13 \\r\\n\strokec10 "\strokec5 );\
+\
+\
+            \} \strokec4 // end else, file\strokec5 \
+            \
+        \} \strokec4 // end printArray function\strokec5 \
+\
+\
+\
+        \strokec6 static\strokec5  \strokec6 void\strokec5  \strokec11 Main\strokec5 (\strokec6 string\strokec5 [] \strokec8 args\strokec5 )\
+        \{\
+            \strokec6 int\strokec5  \strokec8 i\strokec5  = \strokec9 0\strokec5 ;\
+\
+                \strokec4 // Store all the files we need to parse in an array:\strokec5 \
+                \strokec4 // Use small files for testing, \strokec5 \
+                \strokec4 // Use full size files for go-time\strokec5 \
+\
+            \strokec6 string\strokec5 [] \strokec8 theFile\strokec5  = \{ \strokec10 "yelp_user.JSON"\strokec5  \};\
+            \strokec4 //string[] theFile = \{ "yelp_business_small.JSON", "yelp_checkin_small.JSON", "yelp_review_small.JSON", "yelp_user_small.JSON" \};\strokec5 \
+            \strokec4 //string[] theFile = \{ "yelp_business.JSON", "yelp_checkin.JSON", "yelp_review.JSON", "yelp_user.JSON" \};\strokec5 \
+\
+                \strokec4 // set the path:\strokec5 \
+\
+            \strokec4 //string thePath = "\\\\Users\\\\Marcus\\\\Documents\\\\Classes\\\\2019\\\\Spring\\\\Databases\\\\Project\\\\Mileston_1\\\\Yelp-CptS451-2019\\\\";\strokec5 \
+\
+            \strokec12 for\strokec5  (\strokec8 i\strokec5  = \strokec9 0\strokec5 ; \strokec8 i\strokec5  < \strokec8 theFile\strokec5 .\strokec8 Length\strokec5 ; \strokec8 i\strokec5 ++)\
+            \{\
+                    \strokec4 // Open the file for reading:\strokec5 \
+\
+                \strokec8 System\strokec5 .\strokec8 IO\strokec5 .\strokec8 StreamReader\strokec5 \
+                    \strokec8 file\strokec5  = \strokec6 new\strokec5 \
+                    //System.IO.StreamReader(@thePath + theFile[i]);\
+                    System.IO.StreamReader(@theFile[i]);\
+\
+                    // Open file for writing:\
+                    // replace "JSON" by "txt"\
+\
+                //string newFile = Regex.Replace(theFile[i], @"JSON", "txt");\
+                string newFile = "insertUsers.sql";\
+\
+                System.IO.StreamWriter\
+                    outFile = new\
+                    //System.IO.StreamWriter(@thePath + newFile);\
+                    System.IO.StreamWriter(@newFile);\
+\
+                System.IO.StreamWriter\
+                    outFileElite = new\
+                    System.IO.StreamWriter(@"Elite.sql");\
+\
+                System.IO.StreamWriter\
+                    outFileFriends = new\
+                    System.IO.StreamWriter(@"Friends.sql");\
+\
+                System.IO.StreamWriter\
+                    outFileHours = new\
+                    System.IO.StreamWriter(@"Hours.sql");\
+\
+                \
+                    // read the first line:\
+\
+                var testLine = @file.ReadLine();\
+\
+                    // print the field names:\
+\
+                //printKeys(testLine, outFile);\
+\
+                    // Parse as a JObject:\
+\
+                var jObj = JObject.Parse(testLine);\
+                \
+                printLineUsers (testLine, outFile, outFileElite, outFileFriends);\
+\
+\
+                    // Now loop to get the remaining lines:\
+                \
+                \
+                while ((testLine = @file.ReadLine()) != null)\
+                \{\
+                    \strokec11 printLineUsers\strokec5  (\strokec8 testLine\strokec5 , \strokec8 outFile\strokec5 , \strokec8 outFileElite\strokec5 , \strokec8 outFileFriends\strokec5 );\
+\
+                \} \strokec4 // end while loop \strokec5 \
+                 \
+\
+                \strokec4 // Add a newline:\strokec5 \
+\
+                \strokec12 if\strokec5  (\strokec8 whereTo\strokec5  == \strokec9 0\strokec5 )\
+                \{\
+                    \strokec8 System\strokec5 .\strokec8 Console\strokec5 .\strokec11 Write\strokec5 (\strokec10 "\strokec13 \\n\strokec10 "\strokec5 );\
+\
+                \} \strokec4 // end if screen\strokec5 \
+                \strokec12 else\strokec5 \
+                \{\
+                    \strokec8 outFile\strokec5 .\strokec11 Write\strokec5 (\strokec10 "\strokec13 \\r\\n\strokec10 "\strokec5 );\
+\
+                \} \strokec4 // end else, file\strokec5 \
+                \
+                \strokec8 file\strokec5 .\strokec11 Close\strokec5  ();\
+                \strokec8 outFile\strokec5 .\strokec11 Close\strokec5  ();\
+                \strokec8 outFileElite\strokec5 .\strokec11 Close\strokec5  ();\
+                \strokec8 outFileFriends\strokec5 .\strokec11 Close\strokec5  ();\
+                    \
+            \} \strokec4 // end iterate through all files\strokec5 \
+\
+            \strokec4 // Wait for input from user before closing window:\strokec5 \
+\
+            \strokec8 System\strokec5 .\strokec8 Console\strokec5 .\strokec11 WriteLine\strokec5  (\strokec10 "*** Complete ***"\strokec5 );\
+            \strokec8 System\strokec5 .\strokec8 Console\strokec5 .\strokec11 ReadLine\strokec5  ();\
+\
+        \} \strokec4 // end Main \strokec5 \
+\
+    \} \strokec4 // end Program \strokec5 \
+\
+\} \strokec4 // end namespace JSONTest\strokec5 \
+\
+}

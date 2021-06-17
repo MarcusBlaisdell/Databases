@@ -1,0 +1,85 @@
+CREATE TABLE User(
+	user_id_num				VARCHAR(22)	NOT NULL,
+	name					CHAR(11),
+	date_joined				DATE,
+	avg_stars				FLOAT,
+	fans_num				INTEGER,
+	votes_num				INTEGER,
+	latitude				FLOAT,
+	longitude				FLOAT,
+	PRIMARY KEY(user_id_num)
+);
+
+CREATE TABLE Review(
+	review_id_num			VARCHAR(22)	NOT NULL,
+	date					DATE,
+	stars					INTEGER,
+	text					TEXT,
+	cool					BIT,
+	funny					BIT,
+	useful					BIT,
+	PRIMARY KEY(review_id_num)
+);
+
+CREATE TABLE Business(
+	business_id_num			VARCHAR(22)	NOT NULL,
+	name					VARCHAR(25),
+	is_open					BIT,
+	avg_rating				FLOAT,
+	distance_from_user		FLOAT,
+	state					VARCHAR(2),
+	postal					INTEGER,
+	city					VARCHAR(30),
+	street					VARCHAR(30),
+	latitude				FLOAT,
+	longitude				FLOAT,
+	neighborhood			VARCHAR(30),
+	num_checkins			INTEGER DEFAULT 0,
+	review_rating			FLOAT DEFAULT 0.0,
+	PRIMARY KEY(business_id_num)
+);
+
+CREATE TABLE WriteRespondReview(
+	review_id_num			VARCHAR(22) NOT NULL,
+	user_id_num				VARCHAR(22),
+	business_id_num			VARCHAR(22),
+	PRIMARY KEY(review_id_num),
+	FOREIGN KEY(review_id_num)REFERENCES Review(review_id_num),
+	FOREIGN KEY(business_id_num) REFERENCES Business(business_id_num),
+	FOREIGN KEY(user_id_num) REFERENCES User(user_id_num)
+);
+
+CREATE TABLE FavoriteBusiness(
+	user_id_num				VARCHAR(22) NOT NULL,
+	business_id_num			VARCHAR(22) NOT NULL,
+	PRIMARY KEY(user_id_num,business_id_num),
+	FOREIGN KEY(business_id_num) REFERENCES Business(business_id_num),
+	FOREIGN KEY(user_id_num) REFERENCES User(user_id_num)
+);
+
+CREATE TABLE CheckIn(
+	user_id_num				VARCHAR(22) NOT NULL,
+	business_id_num			VARCHAR(22) NOT NULL,
+	time_checkin			TIME,
+	check_ins_num			INTEGER,
+	PRIMARY KEY(user_id_num,business_id_num),
+	FOREIGN KEY(business_id_num) REFERENCES Business(business_id_num),
+	FOREIGN KEY(user_id_num) REFERENCES User(user_id_num)	
+);
+
+CREATE TABLE HasAttribute(
+	business_id_num			VARCHAR(22) NOT NULL,
+	attribute_name			VARCHAR(25) NOT NULL,
+	parent					VARCHAR(25) NOT NULL,
+	value					BIT,
+	PRIMARY KEY(business_id_num,attribute_name,parent),
+	FOREIGN KEY(business_id_num) REFERENCES Business(business_id_num)
+);
+
+CREATE TABLE Friend(
+	user_id_num				VARCHAR(22) NOT NULL,
+	friend_id_num			VARCHAR(22) NOT NULL,
+	PRIMARY KEY(user_id_num,friend_id_num),
+	FOREIGN KEY(user_id_num) REFERENCES User(user_id_num),
+	FOREIGN KEY(friend_id_num) REFERENCES User(user_id_num)
+);
